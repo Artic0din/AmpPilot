@@ -10,7 +10,7 @@ Several solar EV charging solutions exist, but each has limitations that led to 
 |----------|-------------|
 | **ChargeHQ** | Cloud-dependent, subscription pricing, single vehicle only |
 | **Amber for EV** | Australia-only (Amber Electric), price-focused not solar-focused, no battery awareness |
-| **EVCC** | Separate Go installation required, not native HA integration, YAML config outside HA |
+| **EVCC** | Powerful but complex, config via YAML/evcc.yaml outside HA, single loadpoint focus |
 
 **AmpPilot was built to be:**
 - **100% Local** - No cloud dependency, works offline
@@ -201,12 +201,13 @@ logger:
 
 ## Compatibility
 
-Tested with:
-- **Solar**: Tesla Powerwall, Fronius, SolarEdge, Enphase
-- **Chargers**: Teslemetry (Tesla Wall Connector), OCPP, Easee, Wallbox
-- **Vehicles**: Any vehicle with SoC/charging state sensors exposed through Home Assistant
+AmpPilot is integration-agnostic and works with any Home Assistant setup that provides:
 
-Should work with any integration that provides power sensors and controllable number entities.
+- **Solar/Grid sensors** - Any integration exposing power sensors (W)
+- **Chargers** - Any charger with a controllable amperage number entity and on/off switch
+- **Vehicles** - Any vehicle integration exposing SoC/charging state sensors (optional)
+
+If your equipment exposes the right entities in Home Assistant, AmpPilot can use it.
 
 ## Contributing
 
