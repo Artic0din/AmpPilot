@@ -1,0 +1,435 @@
+##############################################
+# AmpPilot Dashboard - EVCC-Inspired Design
+#
+# Required HACS Frontend Cards:
+# - power-flow-card-plus (or power-flow-card)
+# - mushroom cards
+# - stack-in-card
+# - apexcharts-card (optional, for history)
+#
+# Copy this into your Home Assistant dashboard
+##############################################
+
+title: AmpPilot
+views:
+  - title: Solar EV Charging
+    path: amppilot
+    icon: mdi:ev-station
+    badges: []
+    cards:
+      ###########################################
+      # POWER FLOW VISUALIZATION
+      ###########################################
+      - type: custom:power-flow-card-plus
+        entities:
+          battery:
+            entity: sensor.amppilot_battery_power
+            state_of_charge: sensor.amppilot_battery_soc
+            state_of_charge_unit: "%"
+            display_state: two_way
+            color_circle: true
+          grid:
+            entity: sensor.amppilot_grid_power
+            display_state: two_way
+            color_circle: true
+          solar:
+            entity: sensor.amppilot_solar_power
+            display_state: one_way
+          home:
+            entity: sensor.amppilot_home_load
+            override_state: true
+          individual:
+            - entity: sensor.amppilot_vehicle_1_power
+              icon: mdi:car-electric
+              color: "#4CAF50"
+              display_zero: false
+            - entity: sensor.amppilot_vehicle_2_power
+              icon: mdi:car-electric
+              color: "#2196F3"
+              display_zero: false
+        clickable_entities: true
+        display_zero_lines:
+          mode: hide
+        use_new_flow_rate_model: true
+        w_decimals: 0
+        kw_decimals: 1
+        min_flow_rate: 0.75
+        max_flow_rate: 6
+        watt_threshold: 1000
+
+      ###########################################
+      # MAIN STATUS BAR
+      ###########################################
+      - type: custom:stack-in-card
+        mode: horizontal
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: select.amppilot_charging_mode
+            name: Mode
+            icon_color: green
+            tap_action:
+              action: more-info
+            fill_container: true
+          - type: custom:mushroom-entity-card
+            entity: sensor.amppilot_charging_status
+            name: Status
+            icon_color: amber
+            fill_container: true
+          - type: custom:mushroom-entity-card
+            entity: sensor.amppilot_available_surplus
+            name: Surplus
+            icon_color: yellow
+            fill_container: true
+
+      ###########################################
+      # VEHICLE CARDS - Side by Side
+      ###########################################
+      - type: horizontal-stack
+        cards:
+          # Vehicle 1 Card
+          - type: custom:stack-in-card
+            cards:
+              # Vehicle Header
+              - type: custom:mushroom-template-card
+                primary: >-
+                  {{ state_attr('sensor.amppilot_vehicle_1_power', 'vehicle_name') | default('Vehicle 1') }}
+                secondary: >-
+                  {% if is_state_attr('sensor.amppilot_vehicle_1_power', 'is_charging', true) %}
+                    Charging @ {{ states('sensor.amppilot_vehicle_1_amps') | round(0) }}A
+                  {% elif is_state_attr('sensor.amppilot_vehicle_1_power', 'is_connected', true) %}
+                    Connected
+                  {% else %}
+                    Not Connected
+                  {% endif %}
+                icon: mdi:car-electric
+                icon_color: >-
+                  {% if is_state_attr('sensor.amppilot_vehicle_1_power', 'is_charging', true) %}
+                    green
+                  {% elif is_state_attr('sensor.amppilot_vehicle_1_power', 'is_connected', true) %}
+                    blue
+                  {% else %}
+                    grey
+                  {% endif %}
+                badge_icon: >-
+                  {% if is_state_attr('sensor.amppilot_vehicle_1_power', 'is_charging', true) %}
+                    mdi:lightning-bolt
+                  {% endif %}
+                badge_color: yellow
+                tap_action:
+                  action: more-info
+                  entity: sensor.amppilot_vehicle_1_power
+
+              # Power & Energy Stats
+              - type: custom:mushroom-chips-card
+                chips:
+                  - type: template
+                    icon: mdi:flash
+                    content: "{{ states('sensor.amppilot_vehicle_1_power') | int(0) }} W"
+                    icon_color: yellow
+                  - type: template
+                    icon: mdi:counter
+                    content: "{{ states('sensor.amppilot_vehicle_1_energy_today') | float(0) | round(1) }} kWh"
+                    icon_color: blue
+                alignment: center
+
+              # Enable Toggle
+              - type: custom:mushroom-entity-card
+                entity: switch.amppilot_vehicle_1_enabled
+                name: Enabled
+                icon_color: green
+                tap_action:
+                  action: toggle
+                layout: horizontal
+
+          # Vehicle 2 Card
+          - type: custom:stack-in-card
+            cards:
+              # Vehicle Header
+              - type: custom:mushroom-template-card
+                primary: >-
+                  {{ state_attr('sensor.amppilot_vehicle_2_power', 'vehicle_name') | default('Vehicle 2') }}
+                secondary: >-
+                  {% if is_state_attr('sensor.amppilot_vehicle_2_power', 'is_charging', true) %}
+                    Charging @ {{ states('sensor.amppilot_vehicle_2_amps') | round(0) }}A
+                  {% elif is_state_attr('sensor.amppilot_vehicle_2_power', 'is_connected', true) %}
+                    Connected
+                  {% else %}
+                    Not Connected
+                  {% endif %}
+                icon: mdi:car-electric
+                icon_color: >-
+                  {% if is_state_attr('sensor.amppilot_vehicle_2_power', 'is_charging', true) %}
+                    green
+                  {% elif is_state_attr('sensor.amppilot_vehicle_2_power', 'is_connected', true) %}
+                    blue
+                  {% else %}
+                    grey
+                  {% endif %}
+                badge_icon: >-
+                  {% if is_state_attr('sensor.amppilot_vehicle_2_power', 'is_charging', true) %}
+                    mdi:lightning-bolt
+                  {% endif %}
+                badge_color: yellow
+                tap_action:
+                  action: more-info
+                  entity: sensor.amppilot_vehicle_2_power
+
+              # Power & Energy Stats
+              - type: custom:mushroom-chips-card
+                chips:
+                  - type: template
+                    icon: mdi:flash
+                    content: "{{ states('sensor.amppilot_vehicle_2_power') | int(0) }} W"
+                    icon_color: yellow
+                  - type: template
+                    icon: mdi:counter
+                    content: "{{ states('sensor.amppilot_vehicle_2_energy_today') | float(0) | round(1) }} kWh"
+                    icon_color: blue
+                alignment: center
+
+              # Enable Toggle
+              - type: custom:mushroom-entity-card
+                entity: switch.amppilot_vehicle_2_enabled
+                name: Enabled
+                icon_color: green
+                tap_action:
+                  action: toggle
+                layout: horizontal
+
+      ###########################################
+      # SURPLUS GAUGE
+      ###########################################
+      - type: gauge
+        entity: sensor.amppilot_available_surplus
+        name: Available Surplus
+        min: 0
+        max: 10000
+        needle: true
+        segments:
+          - from: 0
+            color: '#db4437'
+          - from: 1400
+            color: '#ffa600'
+          - from: 3000
+            color: '#43a047'
+          - from: 7000
+            color: '#00897b'
+
+      ###########################################
+      # HOME BATTERY STATUS (if configured)
+      ###########################################
+      - type: custom:stack-in-card
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Home Battery
+            secondary: >-
+              {% set power = states('sensor.amppilot_battery_power') | int(0) %}
+              {% if power > 0 %}
+                Charging {{ power }} W
+              {% elif power < 0 %}
+                Discharging {{ power | abs }} W
+              {% else %}
+                Idle
+              {% endif %}
+            icon: >-
+              {% set soc = states('sensor.amppilot_battery_soc') | int(0) %}
+              {% if soc >= 95 %}
+                mdi:battery
+              {% elif soc >= 80 %}
+                mdi:battery-80
+              {% elif soc >= 60 %}
+                mdi:battery-60
+              {% elif soc >= 40 %}
+                mdi:battery-40
+              {% elif soc >= 20 %}
+                mdi:battery-20
+              {% else %}
+                mdi:battery-alert
+              {% endif %}
+            icon_color: >-
+              {% set soc = states('sensor.amppilot_battery_soc') | int(0) %}
+              {% if soc >= 80 %}
+                green
+              {% elif soc >= 40 %}
+                amber
+              {% else %}
+                red
+              {% endif %}
+            badge_icon: >-
+              {% set power = states('sensor.amppilot_battery_power') | int(0) %}
+              {% if power > 0 %}
+                mdi:arrow-down
+              {% elif power < 0 %}
+                mdi:arrow-up
+              {% endif %}
+            badge_color: >-
+              {% set power = states('sensor.amppilot_battery_power') | int(0) %}
+              {% if power > 0 %}
+                green
+              {% elif power < 0 %}
+                orange
+              {% endif %}
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: template
+                icon: mdi:battery-lock
+                content: "Min: {{ state_attr('sensor.amppilot_battery_soc', 'min_soc_threshold') | default(80) }}%"
+                icon_color: amber
+            alignment: center
+
+      ###########################################
+      # CONTROLS & SETTINGS
+      ###########################################
+      - type: custom:stack-in-card
+        title: Controls
+        cards:
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: switch.amppilot_solar_charging
+                icon_color: amber
+                tap_action:
+                  action: toggle
+              - type: entity
+                entity: switch.amppilot_scheduled_charging
+                icon_color: blue
+                tap_action:
+                  action: toggle
+            alignment: center
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-select-card
+                entity: select.amppilot_distribution_mode
+                name: Distribution
+                icon_color: purple
+              - type: custom:mushroom-select-card
+                entity: select.amppilot_priority_vehicle
+                name: Priority
+                icon_color: teal
+
+      ###########################################
+      # THRESHOLD SETTINGS
+      ###########################################
+      - type: custom:stack-in-card
+        title: Thresholds
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-number-card
+                entity: number.amppilot_enable_threshold
+                name: Enable
+                icon_color: green
+                display_mode: buttons
+              - type: custom:mushroom-number-card
+                entity: number.amppilot_disable_threshold
+                name: Disable
+                icon_color: red
+                display_mode: buttons
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-number-card
+                entity: number.amppilot_enable_delay
+                name: Enable Delay
+                icon_color: blue
+                display_mode: buttons
+              - type: custom:mushroom-number-card
+                entity: number.amppilot_disable_delay
+                name: Disable Delay
+                icon_color: orange
+                display_mode: buttons
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-number-card
+                entity: number.amppilot_household_buffer
+                name: Buffer
+                icon_color: purple
+                display_mode: buttons
+              - type: custom:mushroom-number-card
+                entity: number.amppilot_min_battery_soc
+                name: Min Batt SoC
+                icon_color: cyan
+                display_mode: buttons
+
+      ###########################################
+      # VEHICLE LIMITS
+      ###########################################
+      - type: horizontal-stack
+        cards:
+          - type: custom:stack-in-card
+            cards:
+              # Title using template card (stack-in-card title doesn't support templates)
+              - type: custom:mushroom-template-card
+                primary: >-
+                  {{ state_attr('sensor.amppilot_vehicle_1_power', 'vehicle_name') | default('Vehicle 1') }} Limits
+                icon: mdi:car-cog
+                icon_color: blue
+                layout: horizontal
+                card_mod:
+                  style: |
+                    ha-card {
+                      --ha-card-border-width: 0;
+                      padding-bottom: 0 !important;
+                    }
+              - type: horizontal-stack
+                cards:
+                  - type: custom:mushroom-number-card
+                    entity: number.amppilot_vehicle_1_min_amps
+                    name: Min A
+                    display_mode: buttons
+                  - type: custom:mushroom-number-card
+                    entity: number.amppilot_vehicle_1_max_amps
+                    name: Max A
+                    display_mode: buttons
+          - type: custom:stack-in-card
+            cards:
+              # Title using template card (stack-in-card title doesn't support templates)
+              - type: custom:mushroom-template-card
+                primary: >-
+                  {{ state_attr('sensor.amppilot_vehicle_2_power', 'vehicle_name') | default('Vehicle 2') }} Limits
+                icon: mdi:car-cog
+                icon_color: blue
+                layout: horizontal
+                card_mod:
+                  style: |
+                    ha-card {
+                      --ha-card-border-width: 0;
+                      padding-bottom: 0 !important;
+                    }
+              - type: horizontal-stack
+                cards:
+                  - type: custom:mushroom-number-card
+                    entity: number.amppilot_vehicle_2_min_amps
+                    name: Min A
+                    display_mode: buttons
+                  - type: custom:mushroom-number-card
+                    entity: number.amppilot_vehicle_2_max_amps
+                    name: Max A
+                    display_mode: buttons
+
+      ###########################################
+      # HISTORY CHART
+      ###########################################
+      - type: custom:apexcharts-card
+        header:
+          show: true
+          title: Charging History (24h)
+          show_states: false
+        graph_span: 24h
+        apex_config:
+          chart:
+            height: 200px
+          legend:
+            show: true
+          tooltip:
+            enabled: true
+        series:
+          - entity: sensor.amppilot_available_surplus
+            name: Surplus
+            color: '#4CAF50'
+            stroke_width: 2
+          - entity: sensor.amppilot_vehicle_1_power
+            color: '#2196F3'
+            stroke_width: 2
+          - entity: sensor.amppilot_vehicle_2_power
+            color: '#FF9800'
+            stroke_width: 2

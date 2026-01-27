@@ -1,0 +1,439 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "AmpPilot Setup",
+        "description": "Solar-aware dual-EV charging integration",
+        "data": {
+          "name": "Integration name"
+        }
+      },
+      "power_monitoring": {
+        "title": "Power Monitoring",
+        "description": "Select the sensors that monitor your solar production and power flow. These are typically provided by your inverter integration (e.g., SolarEdge, Fronius, Enphase).",
+        "data": {
+          "solar_entity": "Solar production sensor (W)",
+          "grid_entity": "Grid import/export sensor (W)",
+          "home_load_entity": "Home load sensor (W)"
+        },
+        "data_description": {
+          "solar_entity": "Sensor showing current solar panel production in watts (e.g., sensor.solaredge_current_power)",
+          "grid_entity": "Sensor showing grid power flow. Positive = importing from grid, Negative = exporting to grid",
+          "home_load_entity": "Sensor showing total home power consumption excluding EV charging. If not available, leave empty and it will be calculated."
+        }
+      },
+      "battery": {
+        "title": "Home Battery (Optional)",
+        "description": "Configure home battery settings. Skip if you don't have a battery. AmpPilot will wait for the battery to reach the minimum SoC before using excess solar for EV charging.",
+        "data": {
+          "battery_soc_entity": "Battery state of charge sensor (%)",
+          "battery_power_entity": "Battery power sensor (W)",
+          "min_battery_soc": "Minimum battery SoC before EV charging (%)"
+        },
+        "data_description": {
+          "battery_soc_entity": "Sensor showing home battery charge level as percentage (e.g., sensor.powerwall_charge)",
+          "battery_power_entity": "Sensor showing battery charging/discharging power. Positive = charging, Negative = discharging",
+          "min_battery_soc": "EV charging won't start until home battery reaches this level. Default: 80%"
+        }
+      },
+      "vehicle_1": {
+        "title": "Vehicle 1",
+        "description": "Configure your first EV charger. The switch and amperage control entities are required. For Tesla vehicles, use vehicle sensors (sensor.X_charger_current, sensor.X_charging) instead of charger sensors for accurate power readings.",
+        "data": {
+          "vehicle_name": "Vehicle name",
+          "charger_switch_entity": "Charger start/stop switch (required)",
+          "charger_amps_entity": "Charger amperage control (required)",
+          "vehicle_connected_entity": "Vehicle connected sensor",
+          "charger_power_entity": "Charger power sensor",
+          "vehicle_charging_amps_entity": "Vehicle charging amps sensor",
+          "vehicle_charging_state_entity": "Vehicle charging state sensor",
+          "vehicle_soc_entity": "Vehicle SoC sensor",
+          "min_amps": "Minimum charging amps",
+          "max_amps": "Maximum charging amps",
+          "phases": "Number of phases",
+          "voltage": "Voltage per phase"
+        },
+        "data_description": {
+          "vehicle_name": "Friendly name for this vehicle (e.g., 'Model Y', 'Phoenix'). Used in dashboard and logs.",
+          "charger_switch_entity": "Switch to start/stop charging. For Tesla: switch.X_charge (vehicle) or switch.tesla_wall_connector_charging (TWC)",
+          "charger_amps_entity": "Number entity to set charging amperage. For Tesla: number.X_charge_current (vehicle) or number.tesla_wall_connector_charging_current (TWC)",
+          "vehicle_connected_entity": "Binary sensor showing if vehicle is plugged in (e.g., binary_sensor.X_charger)",
+          "charger_power_entity": "Power sensor from the charger hardware. May not work with Mobile Connector - use vehicle amps sensor instead.",
+          "vehicle_charging_amps_entity": "Current sensor from the vehicle itself (e.g., sensor.X_charger_current). More reliable than charger power for Mobile Connector.",
+          "vehicle_charging_state_entity": "Charging state sensor from the vehicle (e.g., sensor.X_charging). Reports 'charging', 'stopped', 'disconnected', etc.",
+          "vehicle_soc_entity": "Battery state of charge from the vehicle (e.g., sensor.X_battery). Used for display and future charge limiting.",
+          "min_amps": "Minimum amperage the charger supports. Most EVs require at least 5-6A to charge. Default: 5A",
+          "max_amps": "Maximum amperage for this charger. Limited by your circuit breaker and charger capacity. Default: 16A",
+          "phases": "Number of electrical phases (1 for single-phase, 3 for three-phase). Affects power calculation.",
+          "voltage": "Voltage per phase. Typically 230-240V for single-phase, 400V for three-phase. Default: 230V"
+        }
+      },
+      "vehicle_2": {
+        "title": "Vehicle 2 (Optional)",
+        "description": "Configure your second EV charger. Skip if you only have one EV. For Tesla vehicles, use vehicle sensors (sensor.X_charger_current, sensor.X_charging) instead of charger sensors for accurate power readings.",
+        "data": {
+          "vehicle_name": "Vehicle name",
+          "charger_switch_entity": "Charger start/stop switch",
+          "charger_amps_entity": "Charger amperage control",
+          "vehicle_connected_entity": "Vehicle connected sensor",
+          "charger_power_entity": "Charger power sensor",
+          "vehicle_charging_amps_entity": "Vehicle charging amps sensor",
+          "vehicle_charging_state_entity": "Vehicle charging state sensor",
+          "vehicle_soc_entity": "Vehicle SoC sensor",
+          "min_amps": "Minimum charging amps",
+          "max_amps": "Maximum charging amps",
+          "phases": "Number of phases",
+          "voltage": "Voltage per phase"
+        },
+        "data_description": {
+          "vehicle_name": "Friendly name for this vehicle (e.g., 'Model 3', 'Slater'). Used in dashboard and logs.",
+          "charger_switch_entity": "Switch to start/stop charging. For Tesla: switch.X_charge (vehicle) or switch.tesla_wall_connector_charging (TWC)",
+          "charger_amps_entity": "Number entity to set charging amperage. For Tesla: number.X_charge_current (vehicle) or number.tesla_wall_connector_charging_current (TWC)",
+          "vehicle_connected_entity": "Binary sensor showing if vehicle is plugged in (e.g., binary_sensor.X_charger)",
+          "charger_power_entity": "Power sensor from the charger hardware. May not work with Mobile Connector - use vehicle amps sensor instead.",
+          "vehicle_charging_amps_entity": "Current sensor from the vehicle itself (e.g., sensor.X_charger_current). More reliable than charger power for Mobile Connector.",
+          "vehicle_charging_state_entity": "Charging state sensor from the vehicle (e.g., sensor.X_charging). Reports 'charging', 'stopped', 'disconnected', etc.",
+          "vehicle_soc_entity": "Battery state of charge from the vehicle (e.g., sensor.X_battery). Used for display and future charge limiting.",
+          "min_amps": "Minimum amperage the charger supports. Most EVs require at least 5-6A to charge. Default: 5A",
+          "max_amps": "Maximum amperage for this charger. Limited by your circuit breaker and charger capacity. Default: 16A",
+          "phases": "Number of electrical phases (1 for single-phase, 3 for three-phase). Affects power calculation.",
+          "voltage": "Voltage per phase. Typically 230-240V for single-phase, 400V for three-phase. Default: 230V"
+        }
+      },
+      "distribution": {
+        "title": "Power Distribution",
+        "description": "Configure how solar surplus is distributed when both vehicles are connected and ready to charge.",
+        "data": {
+          "distribution_mode": "Distribution mode",
+          "priority_vehicle": "Priority vehicle",
+          "min_surplus_per_vehicle": "Minimum surplus per vehicle (W)"
+        },
+        "data_description": {
+          "distribution_mode": "Simultaneous Split: Divide surplus evenly between both vehicles. Priority Then Split: Fill priority vehicle first, then share remainder. Priority Only: Only charge the priority vehicle.",
+          "priority_vehicle": "Which vehicle gets charging priority when using 'Priority' distribution modes.",
+          "min_surplus_per_vehicle": "Minimum surplus watts needed to start charging each vehicle. Should cover minimum amps × voltage (e.g., 5A × 230V = 1150W)."
+        }
+      },
+      "thresholds": {
+        "title": "Charging Thresholds",
+        "description": "Configure when to start and stop solar charging. These settings prevent rapid on/off cycling caused by cloud cover or temporary load changes.",
+        "data": {
+          "enable_threshold": "Surplus to enable charging (W)",
+          "enable_delay": "Delay before enabling (seconds)",
+          "disable_threshold": "Surplus to disable charging (W)",
+          "disable_delay": "Delay before disabling (seconds)",
+          "household_buffer": "Household power buffer (W)"
+        },
+        "data_description": {
+          "enable_threshold": "Minimum surplus watts before starting EV charging. Should cover minimum amps (e.g., 6A × 230V = 1380W). Default: 1400W",
+          "enable_delay": "How long surplus must stay above enable threshold before starting charge. Prevents starting on brief sunny moments. Default: 60s",
+          "disable_threshold": "Stop charging when surplus drops below this. Use 0 to continue until grid import starts. Default: 0W",
+          "disable_delay": "How long to wait below disable threshold before stopping. Prevents stopping on brief clouds. Default: 180s",
+          "household_buffer": "Extra watts reserved for household appliances turning on. Prevents grid import spikes. Default: 200W"
+        }
+      },
+      "schedule": {
+        "title": "Scheduled Charging (Optional)",
+        "description": "Configure time-based charging windows. When in 'Scheduled' mode, charging will only occur during these times at maximum amperage.",
+        "data": {
+          "enable_scheduled": "Enable scheduled charging",
+          "schedule_start": "Schedule start time",
+          "schedule_end": "Schedule end time",
+          "schedule_days": "Days of week"
+        },
+        "data_description": {
+          "enable_scheduled": "Enable the scheduled charging feature. Can be activated via the Charging Mode selector.",
+          "schedule_start": "Time when scheduled charging window begins (24-hour format, e.g., 23:00 for 11 PM).",
+          "schedule_end": "Time when scheduled charging window ends (24-hour format, e.g., 06:00 for 6 AM).",
+          "schedule_days": "Days of the week when scheduled charging is active. Select multiple days for weekday/weekend patterns."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to entity",
+      "invalid_entity": "Invalid entity selected",
+      "switch_required": "Charger start/stop switch is required",
+      "amps_required": "Charger amperage control is required",
+      "entity_unavailable": "Entity is unavailable or unknown",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "Integration is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "power_monitoring": {
+        "title": "Power Monitoring",
+        "description": "Select the sensors that monitor your solar production and power flow.",
+        "data": {
+          "solar_entity": "Solar production sensor (W)",
+          "grid_entity": "Grid import/export sensor (W)",
+          "home_load_entity": "Home load sensor (W)"
+        },
+        "data_description": {
+          "solar_entity": "Sensor showing current solar panel production in watts",
+          "grid_entity": "Sensor showing grid power flow. Positive = importing, Negative = exporting",
+          "home_load_entity": "Sensor showing total home power consumption"
+        }
+      },
+      "battery": {
+        "title": "Home Battery (Optional)",
+        "description": "Configure home battery settings. Skip if you don't have a battery.",
+        "data": {
+          "battery_soc_entity": "Battery state of charge sensor (%)",
+          "battery_power_entity": "Battery power sensor (W)",
+          "min_battery_soc": "Minimum battery SoC before EV charging (%)"
+        },
+        "data_description": {
+          "battery_soc_entity": "Sensor showing home battery charge level as percentage",
+          "battery_power_entity": "Sensor showing battery charging/discharging power",
+          "min_battery_soc": "EV charging won't start until home battery reaches this level. Default: 80%"
+        }
+      },
+      "vehicle_1": {
+        "title": "Vehicle 1",
+        "description": "Configure your first EV charger. For Tesla vehicles, use vehicle sensors for accurate readings.",
+        "data": {
+          "vehicle_name": "Vehicle name",
+          "charger_switch_entity": "Charger start/stop switch (required)",
+          "charger_amps_entity": "Charger amperage control (required)",
+          "vehicle_connected_entity": "Vehicle connected sensor",
+          "charger_power_entity": "Charger power sensor",
+          "vehicle_charging_amps_entity": "Vehicle charging amps sensor",
+          "vehicle_charging_state_entity": "Vehicle charging state sensor",
+          "vehicle_soc_entity": "Vehicle SoC sensor",
+          "min_amps": "Minimum charging amps",
+          "max_amps": "Maximum charging amps",
+          "phases": "Number of phases",
+          "voltage": "Voltage per phase"
+        },
+        "data_description": {
+          "vehicle_name": "Friendly name for this vehicle (e.g., 'Model Y', 'Phoenix').",
+          "charger_switch_entity": "Switch to start/stop charging. For Tesla: switch.X_charge",
+          "charger_amps_entity": "Number entity to set amperage. For Tesla: number.X_charge_current",
+          "vehicle_connected_entity": "Binary sensor showing if vehicle is plugged in.",
+          "charger_power_entity": "Power sensor from charger. May not work with Mobile Connector.",
+          "vehicle_charging_amps_entity": "Current sensor from vehicle (sensor.X_charger_current). More reliable for Mobile Connector.",
+          "vehicle_charging_state_entity": "Charging state from vehicle (sensor.X_charging). Reports 'charging', 'stopped', etc.",
+          "vehicle_soc_entity": "Vehicle battery percentage (sensor.X_battery).",
+          "min_amps": "Minimum amps the charger supports. Default: 5A",
+          "max_amps": "Maximum amps for this charger. Default: 16A",
+          "phases": "Electrical phases (1 or 3). Default: 1",
+          "voltage": "Voltage per phase. Default: 230V"
+        }
+      },
+      "vehicle_2": {
+        "title": "Vehicle 2 (Optional)",
+        "description": "Configure your second EV charger. Leave switch/amps empty to disable.",
+        "data": {
+          "vehicle_name": "Vehicle name",
+          "charger_switch_entity": "Charger start/stop switch",
+          "charger_amps_entity": "Charger amperage control",
+          "vehicle_connected_entity": "Vehicle connected sensor",
+          "charger_power_entity": "Charger power sensor",
+          "vehicle_charging_amps_entity": "Vehicle charging amps sensor",
+          "vehicle_charging_state_entity": "Vehicle charging state sensor",
+          "vehicle_soc_entity": "Vehicle SoC sensor",
+          "min_amps": "Minimum charging amps",
+          "max_amps": "Maximum charging amps",
+          "phases": "Number of phases",
+          "voltage": "Voltage per phase"
+        },
+        "data_description": {
+          "vehicle_name": "Friendly name for this vehicle (e.g., 'Model 3', 'Slater').",
+          "charger_switch_entity": "Switch to start/stop charging. For Tesla: switch.X_charge",
+          "charger_amps_entity": "Number entity to set amperage. For Tesla: number.X_charge_current",
+          "vehicle_connected_entity": "Binary sensor showing if vehicle is plugged in.",
+          "charger_power_entity": "Power sensor from charger. May not work with Mobile Connector.",
+          "vehicle_charging_amps_entity": "Current sensor from vehicle (sensor.X_charger_current). More reliable for Mobile Connector.",
+          "vehicle_charging_state_entity": "Charging state from vehicle (sensor.X_charging). Reports 'charging', 'stopped', etc.",
+          "vehicle_soc_entity": "Vehicle battery percentage (sensor.X_battery).",
+          "min_amps": "Minimum amps the charger supports. Default: 5A",
+          "max_amps": "Maximum amps for this charger. Default: 16A",
+          "phases": "Electrical phases (1 or 3). Default: 1",
+          "voltage": "Voltage per phase. Default: 230V"
+        }
+      },
+      "distribution": {
+        "title": "Power Distribution",
+        "description": "Configure how solar surplus is distributed when both vehicles are connected.",
+        "data": {
+          "distribution_mode": "Distribution mode",
+          "priority_vehicle": "Priority vehicle",
+          "min_surplus_per_vehicle": "Minimum surplus per vehicle (W)"
+        },
+        "data_description": {
+          "distribution_mode": "Simultaneous Split: divide evenly. Priority Then Split: fill priority first. Priority Only: only charge priority vehicle.",
+          "priority_vehicle": "Which vehicle gets charging priority.",
+          "min_surplus_per_vehicle": "Minimum surplus watts needed to start charging each vehicle."
+        }
+      },
+      "thresholds": {
+        "title": "Charging Thresholds",
+        "description": "Configure when to start and stop solar charging.",
+        "data": {
+          "enable_threshold": "Surplus to enable charging (W)",
+          "enable_delay": "Delay before enabling (seconds)",
+          "disable_threshold": "Surplus to disable charging (W)",
+          "disable_delay": "Delay before disabling (seconds)",
+          "household_buffer": "Household power buffer (W)"
+        },
+        "data_description": {
+          "enable_threshold": "Minimum surplus watts before starting EV charging. Default: 1400W",
+          "enable_delay": "Seconds to wait above threshold before starting. Default: 60s",
+          "disable_threshold": "Stop charging when surplus drops below this. Default: 0W",
+          "disable_delay": "Seconds to wait below threshold before stopping. Default: 180s",
+          "household_buffer": "Extra watts reserved for appliances. Default: 200W"
+        }
+      },
+      "schedule": {
+        "title": "Scheduled Charging (Optional)",
+        "description": "Configure time-based charging windows.",
+        "data": {
+          "enable_scheduled": "Enable scheduled charging",
+          "schedule_start": "Schedule start time",
+          "schedule_end": "Schedule end time",
+          "schedule_days": "Days of week"
+        },
+        "data_description": {
+          "enable_scheduled": "Enable the scheduled charging feature.",
+          "schedule_start": "Time when scheduled charging window begins.",
+          "schedule_end": "Time when scheduled charging window ends.",
+          "schedule_days": "Days of the week when scheduled charging is active."
+        }
+      }
+    },
+    "error": {
+      "switch_required": "Charger start/stop switch is required",
+      "amps_required": "Charger amperage control is required"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "available_surplus": {
+        "name": "Available Surplus"
+      },
+      "charging_status": {
+        "name": "Charging Status"
+      },
+      "vehicle_1_power": {
+        "name": "Vehicle 1 Power"
+      },
+      "vehicle_1_amps": {
+        "name": "Vehicle 1 Amps"
+      },
+      "vehicle_1_energy_session": {
+        "name": "Vehicle 1 Session Energy"
+      },
+      "vehicle_1_energy_today": {
+        "name": "Vehicle 1 Today Energy"
+      },
+      "vehicle_2_power": {
+        "name": "Vehicle 2 Power"
+      },
+      "vehicle_2_amps": {
+        "name": "Vehicle 2 Amps"
+      },
+      "vehicle_2_energy_session": {
+        "name": "Vehicle 2 Session Energy"
+      },
+      "vehicle_2_energy_today": {
+        "name": "Vehicle 2 Today Energy"
+      },
+      "solar_power": {
+        "name": "Solar Power"
+      },
+      "grid_power": {
+        "name": "Grid Power"
+      },
+      "home_load": {
+        "name": "Home Load"
+      },
+      "battery_soc": {
+        "name": "Battery SoC"
+      },
+      "battery_power": {
+        "name": "Battery Power"
+      },
+      "vehicle_1_soc": {
+        "name": "Vehicle 1 SoC"
+      },
+      "vehicle_2_soc": {
+        "name": "Vehicle 2 SoC"
+      }
+    },
+    "switch": {
+      "solar_charging": {
+        "name": "Solar Charging"
+      },
+      "scheduled_charging": {
+        "name": "Scheduled Charging"
+      },
+      "vehicle_1_enabled": {
+        "name": "Vehicle 1 Enabled"
+      },
+      "vehicle_2_enabled": {
+        "name": "Vehicle 2 Enabled"
+      }
+    },
+    "number": {
+      "enable_threshold": {
+        "name": "Enable Threshold"
+      },
+      "disable_threshold": {
+        "name": "Disable Threshold"
+      },
+      "enable_delay": {
+        "name": "Enable Delay"
+      },
+      "disable_delay": {
+        "name": "Disable Delay"
+      },
+      "min_battery_soc": {
+        "name": "Min Battery SoC"
+      },
+      "household_buffer": {
+        "name": "Household Buffer"
+      },
+      "vehicle_1_min_amps": {
+        "name": "Vehicle 1 Min Amps"
+      },
+      "vehicle_1_max_amps": {
+        "name": "Vehicle 1 Max Amps"
+      },
+      "vehicle_2_min_amps": {
+        "name": "Vehicle 2 Min Amps"
+      },
+      "vehicle_2_max_amps": {
+        "name": "Vehicle 2 Max Amps"
+      }
+    },
+    "select": {
+      "charging_mode": {
+        "name": "Charging Mode",
+        "state": {
+          "off": "Off",
+          "solar": "Solar",
+          "scheduled": "Scheduled",
+          "boost": "Boost"
+        }
+      },
+      "distribution_mode": {
+        "name": "Distribution Mode",
+        "state": {
+          "simultaneous_split": "Simultaneous Split",
+          "priority_then_split": "Priority Then Split",
+          "priority_only": "Priority Only"
+        }
+      },
+      "priority_vehicle": {
+        "name": "Priority Vehicle",
+        "state": {
+          "vehicle_1": "Vehicle 1",
+          "vehicle_2": "Vehicle 2"
+        }
+      }
+    }
+  }
+}
