@@ -2,6 +2,24 @@
 
 Solar-aware dual-EV charging integration for Home Assistant. Manages charging for up to 2 EVs simultaneously using available solar surplus.
 
+## Why AmpPilot?
+
+Several solar EV charging solutions exist, but each has limitations that led to creating AmpPilot:
+
+| Solution | Limitations |
+|----------|-------------|
+| **ChargeHQ** | Cloud-dependent, subscription pricing, single vehicle only |
+| **Amber for EV** | Australia-only (Amber Electric), price-focused not solar-focused, no battery awareness |
+| **EVCC** | Separate Go installation required, not native HA integration, YAML config outside HA |
+
+**AmpPilot was built to be:**
+- **100% Local** - No cloud dependency, works offline
+- **Native Home Assistant** - Config flow UI, no YAML required
+- **Dual-EV Ready** - Charge 2 vehicles simultaneously with intelligent power splitting
+- **Battery Aware** - Prioritizes home battery before EV charging
+- **Integration Agnostic** - Works with any solar/charger integration in HA
+- **Free & Open Source** - No subscriptions, no lock-in
+
 ## Features
 
 - **Simultaneous Dual-EV Charging** - Unlike other solutions, AmpPilot can charge 2 EVs at the same time by intelligently splitting available solar surplus
